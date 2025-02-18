@@ -17,6 +17,7 @@ struct ProspectsView: View {
     @Query(sort: \Prospect.name) var prospects: [Prospect]
     @State private var isShowingScanner = false
     @State private var selectedProspects = Set<Prospect>()
+    @State private var isContacted = false
     
     var title: String {
         switch filter {
@@ -32,12 +33,24 @@ struct ProspectsView: View {
     var body: some View {
         NavigationStack {
             List(prospects, selection: $selectedProspects) { prospect in
-                VStack(alignment: .leading) {
-                    Text(prospect.name)
-                        .font(.headline)
-                    Text(prospect.emailAddress)
-                        .foregroundStyle(.secondary)
-                    
+                // CHALLENGE 1 : Add an icon to the “Everyone” screen showing whether a prospect was contacted or not.
+                HStack {
+                    if prospect.isContacted {
+                        Image(systemName: "checkmark.circle")
+                            .font(.title)
+                            .foregroundStyle(.green)
+                    } else {
+                        Image(systemName: "questionmark.diamond")
+                            .font(.title)
+                            .foregroundStyle(.red)
+                    }
+                    VStack(alignment: .leading) {
+                        
+                        Text(prospect.name)
+                            .font(.headline)
+                        Text(prospect.emailAddress)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 // Permite que al deslizar uno de los prospects aparezcan botones con opciones, eliminar, marcar como contactado/no contactado y agregar recordatorio
                 .swipeActions {
