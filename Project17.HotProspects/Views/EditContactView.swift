@@ -8,11 +8,17 @@
 import SwiftUI
 
 struct EditContactView: View {
+    @Bindable var prospectsSample: Prospect
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Form {
+                TextField("Name", text: $prospectsSample.name)
+                TextField("Email", text: $prospectsSample.emailAddress)
+            }
+        .navigationTitle("Edit Prospect")
     }
+      
 }
 
 #Preview {
-    EditContactView()
+    EditContactView(prospectsSample:( Prospect(name:"John Doe", emailAddress:"john@example.com", isContacted: false)))
 }

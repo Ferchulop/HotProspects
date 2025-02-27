@@ -14,11 +14,16 @@ struct ProspectsView: View {
     }
     let filter: FilterType
     @Environment(\.modelContext) var modelContext
-    @Query(sort: \Prospect.name) var prospects: [Prospect]
+    @Query var prospects: [Prospect]
     @State private var isShowingScanner = false
     @State private var selectedProspects = Set<Prospect>()
-    @State private var isContacted = false
-    
+    @State private var sortedbyName = true
+    // CHALLENGE 3:
+    var sortedProspects: [Prospect] {
+        prospects.sorted {
+            sortedbyName ? $0.name < $1.name : $0.createdAt > $1.createdAt
+        }
+    }
     var title: String {
         switch filter {
         case .none:
@@ -32,24 +37,31 @@ struct ProspectsView: View {
     
     var body: some View {
         NavigationStack {
-            List(prospects, selection: $selectedProspects) { prospect in
-                // CHALLENGE 1 : Add an icon to the “Everyone” screen showing whether a prospect was contacted or not.
-                HStack {
-                    if prospect.isContacted {
-                        Image(systemName: "checkmark.circle")
-                            .font(.title)
-                            .foregroundStyle(.green)
-                    } else {
-                        Image(systemName: "questionmark.diamond")
-                            .font(.title)
-                            .foregroundStyle(.red)
-                    }
-                    VStack(alignment: .leading) {
-                        
-                        Text(prospect.name)
-                            .font(.headline)
-                        Text(prospect.emailAddress)
-                            .foregroundStyle(.secondary)
+            List(sortedProspects, selection: $selectedProspects) { prospect in
+                // CHALLENGE 2: NavigationLink
+                NavigationLink( destination: EditContactView(prospectsSample: prospect)) {
+                    // CHALLENGE 1 : Add an icon to the “Everyone” screen showing whether a prospect was contacted or not.
+                    HStack {
+                        if prospect.isContacted {
+                            Image(systemName: "checkmark.circle")
+                                .font(.title)
+                                .foregroundStyle(.green)
+                        } else {
+                            Image(systemName: "questionmark.diamond")
+                                .font(.title)
+                                .foregroundStyle(.red)
+                        }
+                        VStack(alignment: .leading) {
+                            
+                            Text(prospect.name)
+                                .font(.headline)
+                            Text(prospect.emailAddress)
+                                .foregroundStyle(.secondary)
+                            Text("Created at: \(prospect.createdAt.formatted())")
+                                .font(.subheadline)
+                                
+                
+                        }
                     }
                 }
                 // Permite que al deslizar uno de los prospects aparezcan botones con opciones, eliminar, marcar como contactado/no contactado y agregar recordatorio
@@ -80,6 +92,12 @@ struct ProspectsView: View {
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button("Switch", systemImage: "arrow.up.arrow.down") {
+                        sortedbyName.toggle()
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Scan", systemImage: "qrcode.viewfinder") {
                         isShowingScanner = true
                     }
@@ -99,8 +117,9 @@ struct ProspectsView: View {
                 CodeScannerView(codeTypes: [.qr], simulatedData: "PaulHudson\npaul@hackingwithswift.com", completion: handleScan)
             }
         }
-        
+        .modelContainer(for: Prospect.self)
     }
+        
     init(filter: FilterType) {
         self.filter = filter
         if filter != .none {
